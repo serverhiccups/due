@@ -5,25 +5,34 @@ export default class MetlinkApi {
 
 		async getStop(stop) {
 				let url = this.apiUrl + "/StopDepartures/" + stop;
-				try {
-						let response = await fetch(url);
-						if(response.status == 404) {
-								throw "An invalid url was passed to getStop (The api returned 404).";
-						} else if (!response.ok) {
-								throw "An error was sent back from the server when using getStop. Does the API still work?";
-						}
-						let json = await response.json();
-						return {
-								name: json["Stop"]["Name"],
-								id: json["Stop"]["Sms"],
-								services: json["Services"].map((service) => {
-										return this.niceifyService(service);
-								})
-						}
-				} catch (e) {
-						console.log(`An error occured when sending a request to this url: ${url}. The error is below.`);
-						console.log(e);
-						return;
+				let response = await fetch(url);
+				if(response.status == 404) {
+						throw "An invalid url was passed to getStop (The api returned 404).";
+				} else if (!response.ok) {
+						throw "An error was sent back from the server when using getStop. Does the API still work?";
+				}
+				let json = await response.json();
+				return {
+						name: json["Stop"]["Name"],
+						id: json["Stop"]["Sms"],
+						services: json["Services"].map((service) => {
+								return this.niceifyService(service);
+						})
+				}
+		}
+
+		async checkStop(stop) {
+				let url = this.apiUrl + "/Stop/" + stop;
+				let response = await fetch(url);
+				if(response.status = 404) {
+						throw "An invalid url was passed to checkStop (The API returned 404)";
+				} else if (!response.ok) {
+						throw "An error was sent back from the server when using checkStop. Does the API still work?";
+				}
+				let json = await response.json();
+				return {
+						name: json["Name"],
+						id: json["Sms"]
 				}
 		}
 

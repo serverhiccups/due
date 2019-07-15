@@ -1,45 +1,47 @@
-import MetlinkApi from './src/libmetlink.js';
-import { Server } from 'https://github.com/fen-land/deno-fen/raw/master//server.ts';
-import { Router } from 'https://github.com/fen-land/deno-fen/raw/master//tool/router.ts';
-import { staticProcess } from "https://github.com/fen-land/deno-fen/raw/master//tool/static.ts";
-import { readFileStr } from 'https://deno.land/std/fs/mod.ts';
+import { Application, Router, send } from "https://raw.githubusercontent.com/serverhiccups/oak/update-std-v.0.11.0/mod.ts";
+import cors from "./src/cors.js";
+import MetlinkApi from "./src/libmetlink.js";
 
-const serv = new Server();
-serv.port = 8080;
-serv.logger.changeLevel("ALL");
 
-let metapi = new MetlinkApi();
+(async () => {
+		let logger = (async (context, next) => {
+				console.log("*************");
+				console.log(`${context.request.method} ${context.request.url}`);
+				console.log("Request:");
+				context.request.headers.forEach((value, key) => {
+						console.log(`${key}: ${value}`);
+				})
+				await next();
+				console.log("Response:");
+				context.response.headers.forEach((value, key) => {
+						console.log(`${key}: ${value}`);
+				})
+		});
 
-let api = new Router("api");
+		let metapi = new MetlinkApi();
 
-api.get("/stop/:id",
-		async context => {
-				context.config.mimeType = "application/json";
+		const router = new Router();
+		router.get("/:path", async context => {
+				await send(context, context.request.path, { root: `${Deno.cwd()}/pub/`, index: "index.html", gzip: false, brotli: false });
+		}).get("/", async context => {
+				await send(context, context.request.path, { root: `${Deno.cwd()}/pub/`, index: "index.html", gzip: false, brotli: false });
+		}).get("/api/stop/:stop", async context => {
 				try {
-						context.headers.set("Cache-Control", "no-cache");
-						context.headers.set("Access-Control-Allow-Origin", "*");
-						context.body = await metapi.getStop(context.data.get("router").params.id)
-				} catch (e) {
-						context.config.mimeType = "text/plain";
-						context.throw(500, "An error occured when try to retreive data from the Metlink API");
+						context.response.body = await metapi.getStop(context.params.stop);
+						context.response.headers.set("Content-Type", "application/json");
+						context.response.status = 200;
+				} catch(e) {
+						context.response.body = "An error occured when getting the data from the Metlink API. Is the provided stop id valid?";
+						context.response.headers.set("Content-Type", "text/plain");
+						context.response.status = 400;
 				}
-		}
-);
+		});
 
-let pub = new Router("pub");
+		const app = new Application();
+		app.use(logger);
+		app.use(cors({ origin: true }));
+		app.use(router.routes());
+		app.use(router.allowedMethods());
 
-
-
-pub.get("/:path",
-	staticProcess({root: `${Deno.cwd()}/pub/`, index: "index.html"})
-).get("/",
-		async context => {
-				context.headers.set("Access-Control-Allow-Origin", "*");
-				context.headers.set("Access-Control-Allow-Methods", "GET");
-				context.config.mimeType = "text/html";
-				context.body = await readFileStr("./pub/index.html");
-		}
-).merge("/api", api);
-
-serv.setController(pub.controller);
-serv.start();
+		await app.listen("127.0.0.1:8080");
+})();

@@ -11,7 +11,7 @@ function sleep(ms) {
 
 let getStops = async (upTo, howManyx) => {
 		let stops = [];
-		for(let i = upTo + 1; i < upTo + 2 + howManyx; i++) {
+		for(let i = upTo + 1; (i < upTo + 2 + howManyx) && (i < 10000); i++) {
 				console.log(`Stop id: ${i}`);
 				let response = await fetch("https://metlink.org.nz/api/v1/Stop/" + i.toString().padStart(4, "0"));
 				if(response.status == 429) {

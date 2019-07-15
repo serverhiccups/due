@@ -21,7 +21,6 @@ let App = {
 		inputSub: (e, vnode) => {
 				let value = e.target[0].value;
 				if(typeof value == "number") value = e.target[0].value.toString().padStart(4, "0");
-				console.log(e);
 				vnode.tag.addOrMoveStop(value, vnode);
 				e.target.value = "";
 		},
@@ -33,7 +32,6 @@ let App = {
 						})),
 						m("form", { onsubmit: (e) => {
 								e.preventDefault();
-								console.log(vnode);
 								vnode.tag.inputSub(e, vnode);
 						}},
 								m("input", { type: "text" })

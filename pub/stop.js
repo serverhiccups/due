@@ -16,17 +16,17 @@ let Stop = {
 		},
 
 		updateTimes: (vnode) => {
-				vnode.state.interval = setInterval(() => {
-						let url = window.location.host + "/api/stop/" + vnode.attrs.stopId;
-						console.log(url, vnode.attrs);
-						fetch(window.location.host + "/api/stop/" + vnode.attrs.stopId).then((response) => { // The bug is somewhere in here, because this always throws.
-								vnode.state.data = JSON.parse(response);
-								console.log("Got a response");
+				let doUpdate = () => {
+						let url = "http://127.0.0.1:8080" + "/api/stop/" + vnode.attrs.stopId; // TODO: This line will not work if the server is being hosted remotely.
+						fetch(url).then(async (response) => {
+								vnode.state.data = await response.json();
 								m.redraw();
 						})/*.catch((e) => {
 								console.log(`The error was: ${e}`);
 						});*/
-				}, 2*1000);
+				}
+				doUpdate();
+				vnode.state.interval = setInterval(doUpdate, 5*1000);
 		},
 
 		oninit: (vnode) => {
