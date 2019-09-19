@@ -1,4 +1,4 @@
-import { Application, Router, send } from "https://raw.githubusercontent.com/serverhiccups/oak/update-std-v.0.11.0/mod.ts";
+import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
 import cors from "./src/cors.js";
 import MetlinkApi from "./src/libmetlink.js";
 
