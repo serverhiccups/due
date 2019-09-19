@@ -22,6 +22,7 @@ let App = {
 		let value = e.target[0].value;
 		e.target.value = "";
 		if(typeof value == "number") value = e.target[0].value.toString().padStart(4, "0");
+		fetch()
 		vnode.tag.addOrMoveStop(value, vnode);
 	},
 
